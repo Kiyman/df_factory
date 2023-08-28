@@ -13,6 +13,111 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Product_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "appdb_service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					},
+					{
+						"name": "StandardCost",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ListPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Size",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Weight",
+						"type": "decimal",
+						"precision": 8,
+						"scale": 2
+					},
+					{
+						"name": "ProductCategoryID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductModelID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SellStartDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "SellEndDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DiscontinuedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ThumbNailPhoto",
+						"type": "varbinary"
+					},
+					{
+						"name": "ThumbnailPhotoFileName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "Product"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/SalesOrderDetail_Table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1321,6 +1426,132 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/10-webactivity')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "GetMetaDataBlobs",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DimCustomerCsvMetadata",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEachFile",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetMetaDataBlobs",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetMetaDataBlobs').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "CopyDimCustomer",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "SqlDWSink",
+											"writeBehavior": "Insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DimCustomerCsvCopy",
+											"type": "DatasetReference",
+											"parameters": {
+												"filename": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DimCustomer_Table",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/01-dataflow-FactSales')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -2054,7 +2285,9 @@
 					]
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Product_Table')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/04-Mappingdataflow-FactSales')]",
@@ -2172,268 +2405,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/D_T_Dimensions')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/06-Copy-Json')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "D_F_Json",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "03-D_F-json",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"logparquetstream": {},
-									"JsonbasedData": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "CopyDatatoSqlPoolfromJson",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "D_F_Json",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "JsonSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"wildcardFileName": "*.json",
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "JsonReadSettings"
-								}
-							},
-							"sink": {
-								"type": "SqlDWSink",
-								"writeBehavior": "Insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"path": "$['Correlationid']"
-										},
-										"sink": {
-											"name": "Correlationid",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Operationname']"
-										},
-										"sink": {
-											"name": "Operationname",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Status']"
-										},
-										"sink": {
-											"name": "Status",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Eventcategory']"
-										},
-										"sink": {
-											"name": "Eventcategory",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Level']"
-										},
-										"sink": {
-											"name": "Level",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Time']"
-										},
-										"sink": {
-											"name": "Time",
-											"type": "DateTime"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Subscription']"
-										},
-										"sink": {
-											"name": "Subscription",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Eventinitiatedby']"
-										},
-										"sink": {
-											"name": "Eventinitiatedby",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Resourcetype']"
-										},
-										"sink": {
-											"name": "Resourcetype",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Resourcegroup']"
-										},
-										"sink": {
-											"name": "Resourcegroup",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "$['Resource']"
-										},
-										"sink": {
-											"name": "Resource",
-											"type": "String"
-										}
-									}
-								],
-								"collectionReference": ""
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "Json1",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "pooldb_logdata_json",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2023-08-25T18:11:17Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/03-D_F-json')]",
-				"[concat(variables('factoryId'), '/datasets/pooldb_logdata_json')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/07-jsonArraysspliting')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "D_F_JsonArrayCustomer",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "04_D_F_JsonArrays",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"jsonArrayStream": {},
-									"CustomerJsonArrayDest": {}
-								}
-							},
-							"staging": {
-								"linkedService": {
-									"referenceName": "datalakekiyman_service",
-									"type": "LinkedServiceReference"
-								},
-								"folderPath": "staging"
-							},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2023-08-25T18:54:59Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/04_D_F_JsonArrays')]"
 			]
 		}
 	]
