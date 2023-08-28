@@ -1,0 +1,76 @@
+{
+	"name": "04_D_F_JsonArrays",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "JsonCustomerArray",
+						"type": "DatasetReference"
+					},
+					"name": "jsonArrayStream"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CustomerCorseJsonArray",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerJsonArrayDest"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flattenjsonarray"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          customerid as integer,",
+				"          customername as string,",
+				"          registered as boolean,",
+				"          courses as string[]",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> jsonArrayStream",
+				"jsonArrayStream foldDown(unroll(courses, courses),",
+				"     mapColumn(",
+				"          customerid,",
+				"          customername,",
+				"          registered,",
+				"          courses",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flattenjsonarray",
+				"flattenjsonarray sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          CustomerID as integer,",
+				"          CustomerName as string,",
+				"          Registered as boolean,",
+				"          Courses as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustomerID = customerid,",
+				"          CustomerName = customername,",
+				"          Registered = registered,",
+				"          Courses = courses",
+				"     )) ~> CustomerJsonArrayDest"
+			]
+		}
+	}
+}

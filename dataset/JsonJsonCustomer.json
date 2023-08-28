@@ -1,0 +1,43 @@
+{
+	"name": "JsonJsonCustomer",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "kiymandataworkspace_pooldb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "CustomerID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CustomerName",
+				"type": "varchar"
+			},
+			{
+				"name": "Registered",
+				"type": "bit"
+			},
+			{
+				"name": "Courses",
+				"type": "varchar"
+			},
+			{
+				"name": "Mobile",
+				"type": "varchar"
+			},
+			{
+				"name": "City",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "adf",
+			"table": "Customercoursejsonjson"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

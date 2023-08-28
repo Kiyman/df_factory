@@ -1,0 +1,9 @@
+{
+	"name": "appfactorykiyman",
+	"location": "northeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "64356822-7b93-4c01-8349-86a868033743",
+		"tenantId": "6432351f-e6c9-4eca-b0d8-64f4eea0b53b"
+	}
+}

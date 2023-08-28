@@ -1,0 +1,12 @@
+{
+	"name": "datalakekiyman_service",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://datalakekiyman.dfs.core.windows.net/",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEIwMkQwMjBFLUE2N0UtNEFCOC04MTA2LUUwMjY0REVGMjlEMV8xNDZhMzA5ZS02N2RmLTQ4NTMtOTJiYi1mMWE5OWI1YTI1OGEiDQp9"
+		}
+	}
+}
