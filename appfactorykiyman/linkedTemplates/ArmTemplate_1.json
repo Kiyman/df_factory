@@ -2087,6 +2087,7 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
+						"     purgeFiles: true,",
 						"     documentForm: 'documentPerLine') ~> stagingmetricsream",
 						"stagingmetricsream select(mapColumn(",
 						"          average,",
