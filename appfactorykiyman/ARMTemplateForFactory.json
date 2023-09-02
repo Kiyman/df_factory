@@ -1440,7 +1440,14 @@
 					{
 						"name": "dfMetric",
 						"type": "ExecuteDataFlow",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Copydatainsights",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -1593,6 +1600,58 @@
 								"enablePartitionDiscovery": false
 							}
 						}
+					},
+					{
+						"name": "Copydatainsights",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*.json",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "InsightsMetricData",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "stagingmetricdata",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -1605,6 +1664,8 @@
 				"[concat(variables('factoryId'), '/dataflows/07_D_F_metrics')]",
 				"[concat(variables('factoryId'), '/datasets/stagingoutput')]",
 				"[concat(variables('factoryId'), '/datasets/WebMetrics')]",
+				"[concat(variables('factoryId'), '/datasets/InsightsMetricData')]",
+				"[concat(variables('factoryId'), '/datasets/stagingmetricdata')]",
 				"[concat(variables('factoryId'), '/linkedServices/datalakekiyman_service')]"
 			]
 		},
@@ -2102,6 +2163,30 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/kiymandataworkspace_pooldb')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/InsightsMetricData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalakekiyman_service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "resourceId=/SUBSCRIPTIONS/728F168B-717D-4762-842B-E1C0BB162DE8/RESOURCEGROUPS/WEB-GRP/PROVIDERS/MICROSOFT.WEB/SITES/WEBAPPKIYMAN",
+						"fileSystem": "insights-metrics-pt1m"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalakekiyman_service')]"
 			]
 		},
 		{

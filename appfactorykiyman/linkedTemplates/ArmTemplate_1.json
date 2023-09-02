@@ -13,6 +13,49 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ProductModel_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "appdb_service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductModelID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "CatalogDescription",
+						"type": "xml"
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "ProductModel"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Product_Table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2041,75 +2084,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/07_D_F_metrics')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "stagingmetricdata",
-								"type": "DatasetReference"
-							},
-							"name": "stagingmetricsream"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "stagingoutput",
-								"type": "DatasetReference"
-							},
-							"name": "stagingoutputstream"
-						}
-					],
-					"transformations": [
-						{
-							"name": "Selectmetricheaders"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          total as integer,",
-						"          minimum as integer,",
-						"          maximum as integer,",
-						"          average as integer,",
-						"          resourceId as string,",
-						"          time as string,",
-						"          metricName as string,",
-						"          timeGrain as string,",
-						"          count as integer",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     purgeFiles: true,",
-						"     documentForm: 'documentPerLine') ~> stagingmetricsream",
-						"stagingmetricsream select(mapColumn(",
-						"          average,",
-						"          time,",
-						"          metricName",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> Selectmetricheaders",
-						"Selectmetricheaders sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> stagingoutputstream"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/stagingmetricdata')]",
-				"[concat(variables('factoryId'), '/datasets/stagingoutput')]"
-			]
 		}
 	]
 }
