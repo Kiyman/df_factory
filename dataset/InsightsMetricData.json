@@ -1,0 +1,19 @@
+{
+	"name": "InsightsMetricData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalakekiyman_service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "resourceId=/SUBSCRIPTIONS/728F168B-717D-4762-842B-E1C0BB162DE8/RESOURCEGROUPS/WEB-GRP/PROVIDERS/MICROSOFT.WEB/SITES/WEBAPPKIYMAN",
+				"fileSystem": "insights-metrics-pt1m"
+			}
+		},
+		"schema": {}
+	}
+}
